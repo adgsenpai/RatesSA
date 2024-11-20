@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>South Africa Electricity Tariffs 2024</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="South Africa Electricity Tariffs 2024 - Calculate your electricity costs based on province and consumption.">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://rates.adgstudios.co.za">
+    <meta property="og:title" content="South Africa Electricity Tariffs 2024">
+    <meta property="og:description" content="Calculate your electricity costs based on province and consumption.">
+    <meta property="og:image" content="https://rates.adgstudios.co.za/seo.webp">
+
+    <!-- keywords -->
+    <meta name="keywords" content="electricity, tariffs, south africa, 2024, rates, cost, consumption, province, calculator">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://rates.adgstudios.co.za/electricity-tariffs-2024">
+    <meta property="twitter:title" content="South Africa Electricity Tariffs 2024">
+    <meta property="twitter:description" content="Calculate your electricity costs based on province and consumption.">
+    <meta property="twitter:image" content="https://rates.adgstudios.co.za/seo.webp">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold mb-6 text-center">South Africa Electricity Tariffs 2024</h1>
+
+        <!-- Calculator Form -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Electricity Cost Calculator</h2>
+            <form id="calculator-form">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Province Selection -->
+                    <div>
+                        <label class="block text-gray-700">Select Province:</label>
+                        <select id="province-select" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-lg p-2">
+                            <option value="">-- Select Province --</option>
+                        </select>
+                    </div>
+                    <!-- Consumption Input -->
+                    <div>
+                        <label class="block text-gray-700">Monthly Consumption (kWh):</label>
+                        <input type="number" id="consumption-input" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-lg p-2" min="0" step="0.01" required>
+                    </div>
+                </div>
+                <!-- Mode Selection -->
+                <div class="mt-4">
+                    <label class="block text-gray-700">Calculation Mode:</label>
+                    <select id="mode-select" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-lg p-2">
+                        <option value="full">Full Month Consumption</option>
+                        <option value="partial">Partial Consumption (Starting from certain kWh)</option>
+                    </select>
+                </div>
+                <!-- Starting Consumption Input -->
+                <div id="starting-consumption-div" class="mt-4 hidden">
+                    <label class="block text-gray-700">Starting Consumption (kWh):</label>
+                    <input type="number" id="starting-consumption-input" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-lg p-2" min="0" step="0.01">
+                </div>
+                <!-- Submit Button -->
+                <div class="mt-6">
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md text-lg">Calculate</button>
+                </div>
+            </form>
+            <!-- Result Table -->
+            <div id="result-div" class="mt-6 hidden">
+                <h3 class="text-xl font-semibold mb-4">Cost Breakdown</h3>
+                <table class="min-w-full bg-white">
+                    <thead>
+                        <tr>
+                            <th class="py-2 px-4 border-b">Tier</th>
+                            <th class="py-2 px-4 border-b">kWh Used</th>
+                            <th class="py-2 px-4 border-b">Rate (R/kWh)</th>
+                            <th class="py-2 px-4 border-b">Cost (R)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body">
+                        <!-- Rows will be added dynamically -->
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="py-2 px-4 text-right font-semibold border-t">Fixed Charges</td>
+                            <td class="py-2 px-4 border-t" id="fixed-charges-cell">R0.00</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="py-2 px-4 text-right font-semibold">Total Cost</td>
+                            <td class="py-2 px-4 font-semibold" id="total-cost-cell">R0.00</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tariff Tables -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold mb-4">Electricity Tariff Rates by Province</h2>
+            <div id="tariff-tables">
+                <!-- Tables will be added dynamically -->
+            </div>
+            <!-- Link to download data as JSON -->
+            <div class="mt-4">
+                <a href="#" id="download-json" class="text-blue-600 underline">Download Tariff Data as JSON</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-8 py-4 bg-gray-200">
+        <div class="container mx-auto text-center">
+            <p class="text-gray-700">
+                Made with <span class="text-red-500">&hearts;</span> by
+                <a href="https://adgstudios.co.za" class="text-blue-600 underline">ADGSTUDIOS</a> © <span id="current-year"></span>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Data and Scripts -->
+    <script>
+        // Set current year in footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // Tariff Data
+        const tariffData = {
+            "Gauteng": {
+                "provider": "City Power",
+                "prepaid": {
+                    "tiers": [
+                        {"min": 0, "max": 350, "rate": 2.01},
+                        {"min": 351, "max": 500, "rate": 2.40},
+                        {"min": 501, "max": Infinity, "rate": 2.73}
+                    ],
+                    "fixed_charge": 0.00
+                },
+                "conventional": {
+                    "tiers": [
+                        {"min": 0, "max": 500, "rate": 2.01},
+                        {"min": 501, "max": 1000, "rate": 2.40},
+                        {"min": 1001, "max": 2000, "rate": 2.73},
+                        {"min": 2001, "max": 3000, "rate": 2.76},
+                        {"min": 3001, "max": Infinity, "rate": 2.76}
+                    ],
+                    "fixed_charge": 949.19
+                }
+            },
+            "Western Cape": {
+                "provider": "City of Cape Town",
+                "lifeline": {
+                    "tiers": [
+                        {"min": 0, "max": 350, "rate": 1.80},
+                        {"min": 351, "max": 450, "rate": 3.63}
+                    ],
+                    "fixed_charge": 0.00,
+                    "eligibility": "Properties valued below R400,000"
+                },
+                "domestic": {
+                    "tiers": [
+                        {"min": 0, "max": 600, "rate": 2.98},
+                        {"min": 601, "max": Infinity, "rate": 3.63}
+                    ],
+                    "fixed_charge": 0.00,
+                    "eligibility": "Properties valued between R400,000 and R1 million"
+                },
+                "home_user": {
+                    "tiers": [
+                        {"min": 0, "max": 600, "rate": 2.63},
+                        {"min": 601, "max": Infinity, "rate": 3.63}
+                    ],
+                    "fixed_charge": 252.09,
+                    "eligibility": "Properties valued above R1 million"
+                }
+            },
+            "KwaZulu-Natal": {
+                "provider": "eThekwini Municipality",
+                "prepaid": {
+                    "tiers": [
+                        {"min": 0, "max": 500, "rate": 2.97},
+                        {"min": 501, "max": Infinity, "rate": 3.42}
+                    ],
+                    "fixed_charge": 0.00
+                },
+                "conventional": {
+                    "tiers": [
+                        {"min": 0, "max": 500, "rate": 2.97},
+                        {"min": 501, "max": Infinity, "rate": 3.42}
+                    ],
+                    "fixed_charge": 0.00
+                }
+            },
+            "Eastern Cape": {
+                "provider": "Nelson Mandela Bay Municipality",
+                "prepaid": {
+                    "tiers": [
+                        {"min": 0, "max": 350, "rate": 2.25},
+                        {"min": 351, "max": 600, "rate": 2.75},
+                        {"min": 601, "max": Infinity, "rate": 3.25}
+                    ],
+                    "fixed_charge": 0.00
+                },
+                "conventional": {
+                    "tiers": [
+                        {"min": 0, "max": 350, "rate": 2.20},
+                        {"min": 351, "max": 600, "rate": 2.70},
+                        {"min": 601, "max": Infinity, "rate": 3.20}
+                    ],
+                    "fixed_charge": 69.00
+                }
+            },
+            "Free State": {
+                "provider": "Mangaung Municipality",
+                "prepaid": {
+                    "tiers": [
+                        {"min": 0, "max": 350, "rate": 2.76},
+                        {"min": 351, "max": 600, "rate": 3.15},
+                        {"min": 601, "max": Infinity, "rate": 3.53}
+                    ],
+                    "fixed_charge": 0.00
+                },
+                "conventional": {
+                    "tiers": [
+                        {"min": 0, "max": 350, "rate": 2.76},
+                        {"min": 351, "max": 600, "rate": 3.15},
+                        {"min": 601, "max": Infinity, "rate": 3.53}
+                    ],
+                    "fixed_charge": 0.00
+                }
+            },
+            "Limpopo": {
+                "provider": "Polokwane Municipality",
+                "prepaid": {
+                    "tiers": [
+                        {"min": 0, "max": 350, "rate": 2.99},
+                        {"min": 351, "max": 600, "rate": 3.25},
+                        {"min": 601, "max": Infinity, "rate": 3.50}
+                    ],
+                    "fixed_charge": 171.17
+                },
+                "conventional": {
+                    "tiers": [
+                        {"min": 0, "max": 350, "rate": 2.99},
+                        {"min": 351, "max": 600, "rate": 3.25},
+                        {"min": 601, "max": Infinity, "rate": 3.50}
+                    ],
+                    "fixed_charge": 171.17
+                }
+            },
+            "Mpumalanga": {
+                "provider": "Mbombela Municipality",
+                "prepaid": {
+                    "tiers": [
+                        {"min": 0, "max": 350, "rate": 3.42},
+                        {"min": 351, "max": 600, "rate": 3.65},
+                        {"min": 601, "max": Infinity, "rate": 3.85}
+                    ],
+                    "fixed_charge": 0.00
+                },
+                "conventional": {
+                    "tiers": [
+                        {"min": 0, "max": 350, "rate": 3.26},
+                        {"min": 351, "max": 600, "rate": 3.50},
+                        {"min": 601, "max": Infinity, "rate": 3.70}
+                    ],
+                    "fixed_charge": 0.00
+                }
+            },
+            "North West": {
+                "provider": "Rustenburg Municipality",
+                "prepaid": {
+                    "tiers": [
+                        {"min": 0, "max": 350, "rate": 2.74},
+                        {"min": 351, "max": 600, "rate": 2.95},
+                        {"min": 601, "max": Infinity, "rate": 3.15}
+                    ],
+                    "fixed_charge": 396.43
+                },
+                "conventional": {
+                    "tiers": [
+                        {"min": 0, "max": 350, "rate": 2.75},
+                        {"min": 351, "max": 600, "rate": 2.96},
+                        {"min": 601, "max": Infinity, "rate": 3.16}
+                    ],
+                    "fixed_charge": 555.75
+                }
+            },
+            "Northern Cape": {
+                "provider": "Kimberley Municipality",
+                "prepaid": {
+                    "tiers": [
+                        {"min": 0, "max": 350, "rate": 3.03},
+                        {"min": 351, "max": 600, "rate": 3.25},
+                        {"min": 601, "max": Infinity, "rate": 3.50}
+                    ],
+                    "fixed_charge": 0.00
+                },
+                "conventional": {
+                    "tiers": [
+                        {"min": 0, "max": 350, "rate": 3.00},
+                        {"min": 351, "max": 600, "rate": 3.22},
+                        {"min": 601, "max": Infinity, "rate": 3.48}
+                    ],
+                    "fixed_charge": 0.00
+                }
+            }
+        };
+
+        // Function to download tariff data as JSON
+        document.getElementById('download-json').addEventListener('click', function(e) {
+            e.preventDefault();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tariffData, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "tariff_data.json");
+            document.body.appendChild(downloadAnchorNode); // required for firefox
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        });
+
+        // Populate Province Dropdown
+        const provinceSelect = document.getElementById('province-select');
+        for (let province in tariffData) {
+            let option = document.createElement('option');
+            option.value = province;
+            option.textContent = province;
+            provinceSelect.appendChild(option);
+        }
+
+        // Show/Hide Starting Consumption Input
+        const modeSelect = document.getElementById('mode-select');
+        const startingConsumptionDiv = document.getElementById('starting-consumption-div');
+        modeSelect.addEventListener('change', function() {
+            if (this.value === 'partial') {
+                startingConsumptionDiv.classList.remove('hidden');
+            } else {
+                startingConsumptionDiv.classList.add('hidden');
+            }
+        });
+
+        // Handle Form Submission
+        const calculatorForm = document.getElementById('calculator-form');
+        calculatorForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            calculateCost();
+        });
+
+        function calculateCost() {
+            const province = provinceSelect.value;
+            const consumption = parseFloat(document.getElementById('consumption-input').value);
+            const mode = modeSelect.value;
+            const startingConsumptionInput = document.getElementById('starting-consumption-input');
+            let startingConsumption = 0;
+
+            if (mode === 'partial') {
+                startingConsumption = parseFloat(startingConsumptionInput.value) || 0;
+            }
+
+            if (!province || isNaN(consumption) || (mode === 'partial' && isNaN(startingConsumption))) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            const customerType = 'prepaid'; // Assuming prepaid for simplicity; you can modify to select type
+            const tariffs = tariffData[province][customerType];
+            const tiers = tariffs.tiers;
+            const fixedCharge = tariffs.fixed_charge;
+
+            let remainingConsumption = consumption;
+            let totalCost = 0;
+            let resultRows = [];
+
+            for (let tier of tiers) {
+                let tierMin = tier.min;
+                let tierMax = tier.max;
+                let rate = tier.rate;
+
+                let applicableMin = Math.max(tierMin, startingConsumption);
+                let applicableMax = Math.min(tierMax, startingConsumption + consumption);
+
+                let kWhUsed = Math.max(0, Math.min(applicableMax - applicableMin, remainingConsumption));
+
+                if (kWhUsed > 0) {
+                    let cost = kWhUsed * rate;
+                    totalCost += cost;
+                    remainingConsumption -= kWhUsed;
+
+                    resultRows.push({
+                        tier: `${applicableMin} - ${applicableMax} kWh`,
+                        kWhUsed: kWhUsed.toFixed(2),
+                        rate: `R${rate.toFixed(2)}`,
+                        cost: `R${cost.toFixed(2)}`
+                    });
+                }
+
+                if (remainingConsumption <= 0) {
+                    break;
+                }
+            }
+
+            // Display Results
+            const resultDiv = document.getElementById('result-div');
+            const resultTableBody = document.getElementById('result-table-body');
+            const fixedChargesCell = document.getElementById('fixed-charges-cell');
+            const totalCostCell = document.getElementById('total-cost-cell');
+
+            // Clear previous results
+            resultTableBody.innerHTML = '';
+
+            for (let row of resultRows) {
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="py-2 px-4 border-b">${row.tier}</td>
+                    <td class="py-2 px-4 border-b">${row.kWhUsed}</td>
+                    <td class="py-2 px-4 border-b">${row.rate}</td>
+                    <td class="py-2 px-4 border-b">${row.cost}</td>
+                `;
+                resultTableBody.appendChild(tr);
+            }
+
+            fixedChargesCell.textContent = `R${fixedCharge.toFixed(2)}`;
+            totalCostCell.textContent = `R${(totalCost + fixedCharge).toFixed(2)}`;
+
+            resultDiv.classList.remove('hidden');
+        }
+
+        // Generate Tariff Tables
+        const tariffTablesDiv = document.getElementById('tariff-tables');
+
+        for (let province in tariffData) {
+            const provinceData = tariffData[province];
+            let provider = provinceData.provider;
+            let customerTypes = Object.keys(provinceData);
+
+            // Remove 'provider' key from customerTypes
+            customerTypes = customerTypes.filter(type => type !== 'provider');
+
+            let provinceSection = document.createElement('div');
+            provinceSection.classList.add('mb-8');
+
+            let provinceTitle = document.createElement('h3');
+            provinceTitle.classList.add('text-xl', 'font-semibold', 'mb-4');
+            provinceTitle.textContent = `${province} - ${provider}`;
+            provinceSection.appendChild(provinceTitle);
+
+            for (let type of customerTypes) {
+                let tariff = provinceData[type];
+
+                let typeTitle = document.createElement('h4');
+                typeTitle.classList.add('text-lg', 'font-semibold', 'mb-2', 'mt-4');
+                typeTitle.textContent = `${type.charAt(0).toUpperCase() + type.slice(1)} Customers`;
+                provinceSection.appendChild(typeTitle);
+
+                if (tariff.eligibility) {
+                    let eligibilityText = document.createElement('p');
+                    eligibilityText.classList.add('text-gray-600', 'mb-2');
+                    eligibilityText.textContent = `Eligibility: ${tariff.eligibility}`;
+                    provinceSection.appendChild(eligibilityText);
+                }
+
+                let table = document.createElement('table');
+                table.classList.add('min-w-full', 'bg-white', 'mb-4');
+
+                let thead = document.createElement('thead');
+                thead.innerHTML = `
+                    <tr>
+                        <th class="py-2 px-4 border-b">Tier</th>
+                        <th class="py-2 px-4 border-b">Rate (R/kWh)</th>
+                    </tr>
+                `;
+                table.appendChild(thead);
+
+                let tbody = document.createElement('tbody');
+
+                for (let tier of tariff.tiers) {
+                    let tr = document.createElement('tr');
+                    let tierRange = `${tier.min} - ${tier.max === Infinity ? 'Infinity' : tier.max} kWh`;
+                    tr.innerHTML = `
+                        <td class="py-2 px-4 border-b">${tierRange}</td>
+                        <td class="py-2 px-4 border-b">R${tier.rate.toFixed(2)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+
+                table.appendChild(tbody);
+
+                if (tariff.fixed_charge > 0) {
+                    let tfoot = document.createElement('tfoot');
+                    tfoot.innerHTML = `
+                        <tr>
+                            <td colspan="2" class="py-2 px-4 text-right font-semibold">Fixed Monthly Charge: R${tariff.fixed_charge.toFixed(2)}</td>
+                        </tr>
+                    `;
+                    table.appendChild(tfoot);
+                }
+
+                provinceSection.appendChild(table);
+            }
+
+            tariffTablesDiv.appendChild(provinceSection);
+        }
+    </script>
+</body>
+</html>
